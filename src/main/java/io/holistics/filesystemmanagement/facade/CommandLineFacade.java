@@ -2,7 +2,7 @@ package io.holistics.filesystemmanagement.facade;
 
 import io.holistics.filesystemmanagement.config.facade.Facade;
 import io.holistics.filesystemmanagement.payload.request.CommandLineRequest;
-import io.holistics.filesystemmanagement.payload.response.viewResponse.ViewResponse;
+import io.holistics.filesystemmanagement.payload.response.viewResponse.DataResponse;
 import io.holistics.filesystemmanagement.service.commandLineService.CommandLineService;
 import io.holistics.filesystemmanagement.utils.CommandLineHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,34 +17,21 @@ public class CommandLineFacade {
     private CommandLineService commandLineService;
 
     @Transactional
-    public String responseAPI(CommandLineRequest body) {
+    public DataResponse responseAPI(CommandLineRequest body) {
         String prefix = commandLineHelper.getPrefixCommand(body.getCommandLine());
         switch (prefix) {
             case "cr":
-                commandLineService.createFileOrFolder(body);
-                break;
+                return commandLineService.createFileOrFolder(body);
             case "rm":
-                commandLineService.removeFile(body);
-                break;
+                return commandLineService.removeFile(body);
             case "cat":
                 return commandLineService.displayFile(body);
             case "up":
-                commandLineService.updateFileOrFolder(body);
-                break;
+                return commandLineService.updateFileOrFolder(body);
             case "mv":
-                commandLineService.moveFileOrFolder(body);
-                break;
+                return commandLineService.moveFileOrFolder(body);
             case "cd":
                 return commandLineService.changeDirect(body);
-            default:
-                break;
-        }
-        return "success";
-    }
-
-    public ViewResponse responseListAPI(CommandLineRequest body) {
-        String prefix = commandLineHelper.getPrefixCommand(body.getCommandLine());
-        switch (prefix) {
             case "find":
                 return commandLineService.search(body);
             case "ls":

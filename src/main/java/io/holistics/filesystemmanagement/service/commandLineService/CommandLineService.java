@@ -3,9 +3,9 @@ package io.holistics.filesystemmanagement.service.commandLineService;
 import io.holistics.filesystemmanagement.model.Files;
 import io.holistics.filesystemmanagement.model.Folders;
 import io.holistics.filesystemmanagement.payload.request.CommandLineRequest;
+import io.holistics.filesystemmanagement.payload.response.viewResponse.DataResponse;
 import io.holistics.filesystemmanagement.payload.response.viewResponse.FileResponse;
 import io.holistics.filesystemmanagement.payload.response.viewResponse.FolderResponse;
-import io.holistics.filesystemmanagement.payload.response.viewResponse.ViewResponse;
 import io.holistics.filesystemmanagement.repository.FileRepository;
 import io.holistics.filesystemmanagement.repository.FolderRepository;
 import io.holistics.filesystemmanagement.utils.CommandLineHelper;
@@ -34,7 +34,7 @@ public class CommandLineService {
 
 
     @Transactional
-    public void createFileOrFolder(CommandLineRequest body) {
+    public DataResponse createFileOrFolder(CommandLineRequest body) {
         //get data from command line
         String data = commandLineHelper.getDataOfFile(body.getCommandLine());
         //if data is not empty, create file
@@ -113,19 +113,25 @@ public class CommandLineService {
             parentFolder.setSubFolders(listSubFolder);
             folderRepository.save(parentFolder);
         }
+        DataResponse response = new DataResponse();
+        response.setStatus("success");
+        return response;
     }
 
-    public String displayFile(CommandLineRequest body) {
+    public DataResponse displayFile(CommandLineRequest body) {
         String filePath = commandLineHelper.getFileOrFolderPath(body.getCommandLine());
         Files file = fileRepository.findByFilePathAndArchivedIsFalse(filePath).orElseThrow(
                 () -> {
                     throw new IllegalArgumentException("cat error: file not found");
                 }
         );
-        return file.getContent();
+        DataResponse response = new DataResponse();
+        response.setContent(file.getContent());
+        response.setStatus("success");
+        return response;
     }
 
-    public void removeFile(CommandLineRequest body) {
+    public DataResponse removeFile(CommandLineRequest body) {
         String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
 
         int numberOfPath = standardizedCommand.split(" ").length;
@@ -152,9 +158,12 @@ public class CommandLineService {
 
             numberOfPath--;
         }
+        DataResponse response = new DataResponse();
+        response.setStatus("success");
+        return response;
     }
 
-    public void updateFileOrFolder(CommandLineRequest body) {
+    public DataResponse updateFileOrFolder(CommandLineRequest body) {
         String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
         String path = standardizedCommand.split(" ")[1];
         if (filesAndFoldersHelper.isAFilePath(path)) {
@@ -163,6 +172,8 @@ public class CommandLineService {
                     .orElseThrow(() -> {
                         throw new IllegalArgumentException("Error at update: File not found");
                     });
+            String newFilePath = commandLineHelper.getFolderParentPath(path).concat("/").concat(newName);
+            file.setFilePath(newFilePath);
             file.setFileName(newName);
             String data = commandLineHelper.getDataOfFile(standardizedCommand);
             if (!data.isEmpty()) {
@@ -188,10 +199,12 @@ public class CommandLineService {
             parentFolder.setSubFolders(listSubFolder);
             folderRepository.save(parentFolder);
         }
-
+        DataResponse response = new DataResponse();
+        response.setStatus("success");
+        return response;
     }
 
-    public void moveFileOrFolder(CommandLineRequest body) {
+    public DataResponse moveFileOrFolder(CommandLineRequest body) {
         try {
             String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
             String oldPath = standardizedCommand.split(" ")[1];
@@ -243,19 +256,24 @@ public class CommandLineService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Moving error: Can not move file/folder");
         }
+        DataResponse response = new DataResponse();
+        response.setStatus("success");
+        return response;
     }
 
-    public String changeDirect(CommandLineRequest body) {
+    public DataResponse changeDirect(CommandLineRequest body) {
         String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
         String path = commandLineHelper.getFileOrFolderPath(standardizedCommand);
         folderRepository.findByFolderPathAndArchivedIsFalse(path)
                 .orElseThrow(() -> {
                     throw new IllegalArgumentException("Error: Not found folder");
                 });
-        return path;
+        DataResponse response = new DataResponse();
+        response.setContent(path);
+        return response;
     }
 
-    public ViewResponse search(CommandLineRequest body) {
+    public DataResponse search(CommandLineRequest body) {
         try {
             String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
             String name = standardizedCommand.split(" ")[1];
@@ -292,10 +310,10 @@ public class CommandLineService {
                 });
 
                 //return view
-                ViewResponse viewResponse = new ViewResponse();
-                viewResponse.setFiles(fileResponses);
-                viewResponse.setFolders(folderResponses);
-                return viewResponse;
+                DataResponse dataResponse = new DataResponse();
+                dataResponse.setFiles(fileResponses);
+                dataResponse.setFolders(folderResponses);
+                return dataResponse;
             } else {
                 List<Files> listOfFiles = fileRepository
                         .findByName(name)
@@ -329,17 +347,17 @@ public class CommandLineService {
                     }
 
                 // return view
-                ViewResponse viewResponse = new ViewResponse();
-                viewResponse.setFiles(fileResponses);
-                viewResponse.setFolders(folderResponses);
-                return viewResponse;
+                DataResponse dataResponse = new DataResponse();
+                dataResponse.setFiles(fileResponses);
+                dataResponse.setFolders(folderResponses);
+                return dataResponse;
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage());
         }
     }
 
-    public ViewResponse displayFilesAndFolder(CommandLineRequest body) {
+    public DataResponse displayFilesAndFolder(CommandLineRequest body) {
         try {
             String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
             boolean hadFolderPath = standardizedCommand.split(" ").length > 2;
@@ -380,10 +398,10 @@ public class CommandLineService {
                     folderResponses.add(response);
                 }
 
-            ViewResponse viewResponse = new ViewResponse();
-            viewResponse.setFiles(fileResponses);
-            viewResponse.setFolders(folderResponses);
-            return viewResponse; // use fo response API
+            DataResponse dataResponse = new DataResponse();
+            dataResponse.setFiles(fileResponses);
+            dataResponse.setFolders(folderResponses);
+            return dataResponse; // use fo response API
 
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage());
@@ -407,5 +425,11 @@ public class CommandLineService {
             folder.setParentPath(parentFolderPath);
             folderRepository.save(folder);
         }
+    }
+
+    private DataResponse throwErrorMessageResponse(String message) {
+        DataResponse response = new DataResponse();
+        response.setStatus(message);
+        return response;
     }
 }

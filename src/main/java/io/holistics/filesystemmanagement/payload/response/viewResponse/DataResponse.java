@@ -11,7 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ViewResponse {
+public class DataResponse {
     private List<FileResponse> files;
     private List<FolderResponse> folders;
+    private String content;
+    private String status;
 }
