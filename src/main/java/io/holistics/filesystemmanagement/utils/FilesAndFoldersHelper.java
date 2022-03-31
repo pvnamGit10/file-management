@@ -23,6 +23,6 @@ public class FilesAndFoldersHelper {
     }
 
     public boolean isAFilePath(String filePath) {
-        return (filePath.substring(filePath.lastIndexOf(".") + 1).equals(".txt"));
+        return (filePath.substring(filePath.lastIndexOf(".")).equals(".txt"));
     }
 }
