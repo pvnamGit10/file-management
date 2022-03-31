@@ -34,6 +34,8 @@ public class CommandLineFacade {
             case "mv":
                 commandLineService.moveFileOrFolder(body);
                 break;
+            case "cd":
+                return commandLineService.changeDirect(body);
             default:
                 break;
         }

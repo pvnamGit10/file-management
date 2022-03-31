@@ -245,6 +245,16 @@ public class CommandLineService {
         }
     }
 
+    public String changeDirect(CommandLineRequest body) {
+        String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
+        String path = commandLineHelper.getFileOrFolderPath(standardizedCommand);
+        folderRepository.findByFolderPathAndArchivedIsFalse(path)
+                .orElseThrow(() -> {
+                    throw new IllegalArgumentException("Error: Not found folder");
+                });
+        return path;
+    }
+
     public ViewResponse search(CommandLineRequest body) {
         try {
             String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
