@@ -5,8 +5,10 @@ import lombok.Data;
 @Data
 public class ErrorMessageResponse {
     private String message;
+    private String status;
 
-    public ErrorMessageResponse(String message) {
+    public ErrorMessageResponse(String message, String status) {
         this.message = message;
+        this.status = status;
     }
 }
