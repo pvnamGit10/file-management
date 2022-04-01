@@ -16,18 +16,11 @@ public class CommandLineFacade {
     @Autowired
     private CommandLineService commandLineService;
 
-    @Transactional
-    public DataResponse responseAPI(CommandLineRequest body) {
+    public DataResponse dispatchGetDataResponse(CommandLineRequest body) {
         String prefix = commandLineHelper.getPrefixCommand(body.getCommandLine());
         switch (prefix) {
-            case "cr":
-                return commandLineService.createFileOrFolder(body);
-            case "rm":
-                return commandLineService.removeFile(body);
             case "cat":
                 return commandLineService.displayFile(body);
-            case "up":
-                return commandLineService.updateFileOrFolder(body);
             case "mv":
                 return commandLineService.moveFileOrFolder(body);
             case "cd":
@@ -37,7 +30,22 @@ public class CommandLineFacade {
             case "ls":
                 return commandLineService.displayFilesAndFolder(body);
             default:
-                return null;
+                throw new IllegalArgumentException("terminal incorrect");
         }
+    }
+
+    @Transactional
+    public DataResponse createFileOrFolder(CommandLineRequest body) {
+        return commandLineService.createFileOrFolder(body);
+    }
+
+    @Transactional
+    public DataResponse updateFileOrFolder(CommandLineRequest body) {
+        return commandLineService.updateFileOrFolder(body);
+    }
+
+    @Transactional
+    public DataResponse removeFileOrFolder(CommandLineRequest body) {
+        return commandLineService.removeFileOrFolder(body);
     }
 }

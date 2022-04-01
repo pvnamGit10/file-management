@@ -50,7 +50,7 @@ public class CommandLineService {
                 createParentPath(body);
             } else {
                 folders = folderRepository.findByFolderPathAndArchivedIsFalse(parentPath).orElseThrow(() -> {
-                    throw new IllegalArgumentException("Exception in create File: No such folder");
+                    throw new IllegalArgumentException("create error: no folder found");
                 });
             }
             //throw error when not found file path in folder
@@ -61,7 +61,7 @@ public class CommandLineService {
             // example a PATH is root/demo/fileTest => filePath is "root/demo/fileTest"
             String filePath = commandLineHelper.getFileOrFolderPath(body.getCommandLine());
             if (filesAndFoldersHelper.checkFileIsExisted(filePath)) {
-                throw new IllegalArgumentException("File is existed");
+                throw new IllegalArgumentException("create error: file is existed");
             }
             String fileName = commandLineHelper.getFileName(filePath);
             file.setParentFolderPath(parentPath);
@@ -78,8 +78,11 @@ public class CommandLineService {
             //get folder path, from begin to previous of file name,
             // example a PATH is root/demo/fileTest => filePath is "root/demo"
             String folderPath = commandLineHelper.getFileOrFolderPath(body.getCommandLine());
+            if (folderPath.contains(".txt")) {
+                throw new IllegalArgumentException("create error: folder does not contains .txt");
+            }
             if (filesAndFoldersHelper.checkFolderIsExisted(folderPath)) {
-                throw new IllegalArgumentException("Folder is existed");
+                throw new IllegalArgumentException("create error: folder is existed");
             }
 
             String parentFolderPath = commandLineHelper.getFolderParentPath(folderPath);
@@ -88,7 +91,7 @@ public class CommandLineService {
                 createParentPath(body);
             } else {
                 folderRepository.findByFolderPathAndArchivedIsFalse(parentFolderPath).orElseThrow(() -> {
-                    throw new IllegalArgumentException("Exception in create Folder: No such folder");
+                    throw new IllegalArgumentException("create error: : no folder found");
                 });
             }
 
@@ -106,7 +109,7 @@ public class CommandLineService {
 
             //insert sub folder to parent folder
             Folders parentFolder = folderRepository.findByFolderPathAndArchivedIsFalse(parentFolderPath).orElseThrow(() -> {
-                throw new IllegalArgumentException("Exception in create Folder: No such parent folder");
+                throw new IllegalArgumentException("create error: no parent folder found");
             });
             ArrayList<Folders> listSubFolder = new ArrayList<>();
             listSubFolder.add(folder);
@@ -131,7 +134,7 @@ public class CommandLineService {
         return response;
     }
 
-    public DataResponse removeFile(CommandLineRequest body) {
+    public DataResponse removeFileOrFolder(CommandLineRequest body) {
         String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
 
         int numberOfPath = standardizedCommand.split(" ").length;
@@ -143,14 +146,14 @@ public class CommandLineService {
             if (filesAndFoldersHelper.isAFilePath(filePath)) {
                 Files file = fileRepository.findByFilePathAndArchivedIsFalse(filePath).orElseThrow(
                         () -> {
-                            throw new IllegalArgumentException("Exception in remove: No such file");
+                            throw new IllegalArgumentException("remove error: no file found");
                         });
                 file.setArchived(true);
                 fileRepository.save(file);
             } else {
                 Folders folder = folderRepository.findByFolderPathAndArchivedIsFalse(filePath).orElseThrow(
                         () -> {
-                            throw new IllegalArgumentException("Exception in remove: No such file");
+                            throw new IllegalArgumentException("remove error: No file found");
                         });
                 folder.setArchived(true);
                 folderRepository.save(folder);
@@ -170,7 +173,7 @@ public class CommandLineService {
             String newName = standardizedCommand.split(" ")[2];
             Files file = fileRepository.findByFilePathAndArchivedIsFalse(path)
                     .orElseThrow(() -> {
-                        throw new IllegalArgumentException("Error at update: File not found");
+                        throw new IllegalArgumentException("update error: no file found");
                     });
             String newFilePath = commandLineHelper.getFolderParentPath(path).concat("/").concat(newName);
             file.setFilePath(newFilePath);
@@ -184,7 +187,7 @@ public class CommandLineService {
             String newName = standardizedCommand.split(" ")[2];
             Folders folder = folderRepository.findByFolderPathAndArchivedIsFalse(path)
                     .orElseThrow(() -> {
-                        throw new IllegalArgumentException("Error at update: Folder not found");
+                        throw new IllegalArgumentException("update error: no folder found");
                     });
             folder.setFolderName(newName);
             folderRepository.save(folder);
@@ -192,7 +195,7 @@ public class CommandLineService {
             //Update sub folder in parent folder
             String parentFolderPath = commandLineHelper.getFolderParentPath(path);
             Folders parentFolder = folderRepository.findByFolderPathAndArchivedIsFalse(parentFolderPath).orElseThrow(() -> {
-                throw new IllegalArgumentException("Exception in create Folder: No such parent folder");
+                throw new IllegalArgumentException("update error: no parent folder found");
             });
             ArrayList<Folders> listSubFolder = new ArrayList<>();
             listSubFolder.add(folder);
@@ -210,18 +213,18 @@ public class CommandLineService {
             String oldPath = standardizedCommand.split(" ")[1];
             String newPath = standardizedCommand.split(" ")[2];
             folderRepository.findByFolderPathAndArchivedIsFalse(newPath).orElseThrow(() -> {
-                throw new IllegalArgumentException("Exception in move: New folder not existed");
+                throw new IllegalArgumentException("move error: new folder not existed");
             });
 
             if (newPath.contains(oldPath)) {
-                throw new IllegalArgumentException("Exception in move: New folder is subfolder");
+                throw new IllegalArgumentException("move error: new folder is subfolder");
             }
 
             if (filesAndFoldersHelper.checkFileIsExisted(oldPath) && filesAndFoldersHelper.isAFilePath(oldPath)) {
                 String fileName = commandLineHelper.getFileName(oldPath);
                 Files file = fileRepository.findByFilePathAndArchivedIsFalse(oldPath).orElseThrow(
                         () -> {
-                            throw new IllegalArgumentException("Moving error: File not found");
+                            throw new IllegalArgumentException("move error: file not found");
                         }
                 );
                 file.setParentFolderPath(newPath);
@@ -232,7 +235,7 @@ public class CommandLineService {
                 Folders folder = folderRepository.findByFolderPathAndArchivedIsFalse(oldPath)
                         .orElseThrow(
                                 () -> {
-                                    throw new IllegalArgumentException("Moving error: Folder not found");
+                                    throw new IllegalArgumentException("move error: folder not found");
                                 }
                         );
                 ;
@@ -243,7 +246,7 @@ public class CommandLineService {
                 //update sub folder in parent folder
                 String parentFolderPath = commandLineHelper.getFolderParentPath(newPath);
                 Folders parentFolder = folderRepository.findByFolderPathAndArchivedIsFalse(parentFolderPath).orElseThrow(() -> {
-                    throw new IllegalArgumentException("Exception in create Folder: No such parent folder");
+                    throw new IllegalArgumentException("move error: no parent folder found");
                 });
                 ArrayList<Folders> listSubFolder = new ArrayList<>();
                 listSubFolder.add(folder);
@@ -251,10 +254,10 @@ public class CommandLineService {
                 folderRepository.save(parentFolder);
 
             } else {
-                throw new IllegalArgumentException("Moving error: No such element");
+                throw new IllegalArgumentException("move error: : no element found");
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Moving error: Can not move file/folder");
+            throw new IllegalArgumentException("move error: can not move file/folder");
         }
         DataResponse response = new DataResponse();
         response.setStatus("success");
@@ -266,10 +269,11 @@ public class CommandLineService {
         String path = commandLineHelper.getFileOrFolderPath(standardizedCommand);
         folderRepository.findByFolderPathAndArchivedIsFalse(path)
                 .orElseThrow(() -> {
-                    throw new IllegalArgumentException("Error: Not found folder");
+                    throw new IllegalArgumentException("error: not found folder");
                 });
         DataResponse response = new DataResponse();
         response.setContent(path);
+        response.setStatus("success");
         return response;
     }
 
@@ -285,9 +289,8 @@ public class CommandLineService {
                 List<Files> listOfFiles = fileRepository
                         .findByNameAndFolder(name, folderPath)
                         .orElseThrow(() -> {
-                            throw new IllegalArgumentException("Find error: no file");
+                            throw new IllegalArgumentException("find error: no file found");
                         });
-
                 // convert original list to response
                 ArrayList<FileResponse> fileResponses = new ArrayList<>();
                 listOfFiles.forEach(file -> {
@@ -299,9 +302,15 @@ public class CommandLineService {
                 List<Folders> listOfFolders = folderRepository
                         .findByNameAndFolderParent(name, folderPath)
                         .orElseThrow(() -> {
-                            throw new IllegalArgumentException("Find error: no folders");
+                            throw new IllegalArgumentException("find error: no folder found");
                         });
 
+                if (listOfFiles.isEmpty() && listOfFolders.isEmpty()) {
+                    DataResponse dataResponse = new DataResponse();
+                    dataResponse.setContent("no result");
+                    dataResponse.setStatus("success");
+                    return dataResponse;
+                }
                 // convert original list to response
                 ArrayList<FolderResponse> folderResponses = new ArrayList<>();
                 listOfFolders.forEach(folder -> {
@@ -318,7 +327,7 @@ public class CommandLineService {
                 List<Files> listOfFiles = fileRepository
                         .findByName(name)
                         .orElseThrow(() -> {
-                            throw new IllegalArgumentException("Find error: no folders");
+                            throw new IllegalArgumentException("find error: no file found");
                         });
 
                 // convert original list to response
@@ -334,9 +343,14 @@ public class CommandLineService {
                 List<Folders> listOfFolders = folderRepository
                         .findByName(name)
                         .orElseThrow(() -> {
-                            throw new IllegalArgumentException("Find error: no folders");
+                            throw new IllegalArgumentException("find error: no folder found");
                         });
-                ;
+                if (listOfFiles.isEmpty() && listOfFolders.isEmpty()) {
+                    DataResponse dataResponse = new DataResponse();
+                    dataResponse.setContent("no result");
+                    dataResponse.setStatus("success");
+                    return dataResponse;
+                }
 
                 // convert original list to response
                 ArrayList<FolderResponse> folderResponses = new ArrayList<>();
@@ -350,6 +364,7 @@ public class CommandLineService {
                 DataResponse dataResponse = new DataResponse();
                 dataResponse.setFiles(fileResponses);
                 dataResponse.setFolders(folderResponses);
+                dataResponse.setStatus("success");
                 return dataResponse;
             }
         } catch (Exception e) {
@@ -360,19 +375,18 @@ public class CommandLineService {
     public DataResponse displayFilesAndFolder(CommandLineRequest body) {
         try {
             String standardizedCommand = commandLineHelper.standardizeString(body.getCommandLine());
-            boolean hadFolderPath = standardizedCommand.split(" ").length > 2;
+            boolean hadFolderPath = standardizedCommand.split(" ").length >= 2;
             String path = "";
             if (hadFolderPath) {
-                path = standardizedCommand.split(" ")[2]; // use [FOLDER_PATH]
+                path = standardizedCommand.split(" ")[1]; // use [FOLDER_PATH]
             } else {
                 path = body.getPath(); //use path from body request
             }
-
             // get list of files
             List<Files> listOfFiles = fileRepository
                     .findByFolderPath(path)
                     .orElseThrow(() -> {
-                        throw new IllegalArgumentException("ls error: no folders");
+                        throw new IllegalArgumentException("ls error: no file found");
                     });
 
             // convert original list to response
@@ -387,7 +401,7 @@ public class CommandLineService {
             List<Folders> listOfFolders = folderRepository
                     .findByFolderParentPath(path)
                     .orElseThrow(() -> {
-                        throw new IllegalArgumentException("ls error: no folders");
+                        throw new IllegalArgumentException("ls error: no folder found");
                     });
 
             // convert original list to response
@@ -401,6 +415,7 @@ public class CommandLineService {
             DataResponse dataResponse = new DataResponse();
             dataResponse.setFiles(fileResponses);
             dataResponse.setFolders(folderResponses);
+            dataResponse.setStatus("success");
             return dataResponse; // use fo response API
 
         } catch (Exception e) {
@@ -418,6 +433,9 @@ public class CommandLineService {
 
         //if parentPathForCreate is not existed, create it
         if (folderRepository.findByFolderPathAndArchivedIsFalse(parentPathForCreate).isEmpty()) {
+            if (parentFolderPath.contains(".txt")) {
+                throw new IllegalArgumentException("create error: folder does not contains .txt");
+            }
             Folders folder = new Folders();
             LocalDateTime createAt = LocalDateTime.now();
             folder.setCreateAt(createAt);
@@ -425,11 +443,5 @@ public class CommandLineService {
             folder.setParentPath(parentFolderPath);
             folderRepository.save(folder);
         }
-    }
-
-    private DataResponse throwErrorMessageResponse(String message) {
-        DataResponse response = new DataResponse();
-        response.setStatus(message);
-        return response;
     }
 }
