@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import CommandPromt from './components/CommandPromt.js';
+import CommandPromt from './components/CommandPromt';
 
 function App() {
   return (
