@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:8080/api/v1/terminal';
 
 export const getData = (query: any) => {
     return axios.get(BASE_URL, {
-        params: {query}
+        params: { query }
     })
         .then(response => handleResponse(response))
         .catch(error => handleError(error.response))
@@ -25,7 +25,7 @@ export const putData = (input: any) => {
 
 export const deleteData = (query: any) => {
     return axios.delete(BASE_URL, {
-        params: {query}
+        params: { query }
     })
         .then(response => handleResponse(response))
         .catch(error => handleError(error.response))
