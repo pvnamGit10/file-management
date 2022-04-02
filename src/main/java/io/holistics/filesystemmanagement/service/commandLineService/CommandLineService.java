@@ -68,7 +68,7 @@ public class CommandLineService {
                 throw new IllegalArgumentException("create error: file is existed");
             }
             String fileName = commandLineHelper.getFileName(filePath);
-            if (!fileName.matches(REGEX)) {
+            if (fileName.matches(REGEX)) {
                 throw new IllegalArgumentException("create error: file name fail");
             }
             file.setParentFolderPath(parentPath);
@@ -109,7 +109,7 @@ public class CommandLineService {
 
 
             String folderName = commandLineHelper.getFolderName(folderPath);
-            if (!folderName.matches(REGEX)) {
+            if (folderName.matches(REGEX)) {
                 throw new IllegalArgumentException("create error: folder name fail");
             }
             LocalDateTime createAt = LocalDateTime.now();
@@ -188,7 +188,7 @@ public class CommandLineService {
         path = addDefaultRoot(path);
         if (filesAndFoldersHelper.isAFilePath(path)) {
             String newName = separatedCommand[2];
-            if (!newName.matches(REGEX)) {
+            if (newName.matches(REGEX)) {
                 throw new IllegalArgumentException("update error: file name fail");
             }
             Files file = fileRepository.findByFilePathAndArchivedIsFalse(path)
@@ -206,7 +206,7 @@ public class CommandLineService {
             fileRepository.save(file);
         } else {
             String newName = separatedCommand[2];
-            if (!newName.matches(REGEX)) {
+            if (newName.matches(REGEX)) {
                 throw new IllegalArgumentException("update error: folder name fail");
             }
             Folders folder = folderRepository.findByFolderPathAndArchivedIsFalse(path)
@@ -247,7 +247,7 @@ public class CommandLineService {
 
         if (filesAndFoldersHelper.checkFileIsExisted(oldPath) && filesAndFoldersHelper.isAFilePath(oldPath)) {
             String fileName = commandLineHelper.getFileName(oldPath);
-            if (!fileName.matches(REGEX)) {
+            if (fileName.matches(REGEX)) {
                 throw new IllegalArgumentException("move error: file name fail");
             }
             Files file = fileRepository.findByFilePathAndArchivedIsFalse(oldPath).orElseThrow(
@@ -263,7 +263,7 @@ public class CommandLineService {
             return response;
         } else if (filesAndFoldersHelper.checkFolderIsExisted(oldPath)) {
             String folderName = commandLineHelper.getFileName(oldPath);
-            if (!folderName.matches(REGEX)) {
+            if (folderName.matches(REGEX)) {
                 throw new IllegalArgumentException("move error: folder name fail");
             }
             Folders folder = folderRepository.findByFolderPathAndArchivedIsFalse(oldPath)
