@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin("https://io-file-management-system.herokuapp.com/")
 public class CommandLineController {
 
     @Autowired
