@@ -14,9 +14,35 @@ interface ResponseData {
   status: string;
 }
 
+const welcomeGuide: LineData[] =
+  [
+    { type: LineType.Output, value: 'Welcome to file management system' },
+    { type: LineType.Output, value: 'Type `clear` to clear console' },
+    { type: LineType.Output, value: 'Type `help` to get guideline' },
+  ];
+
+const help: LineData[] =
+  [
+    { type: LineType.Output, value: 'Supporting the following commands ' },
+    { type: LineType.Output, value: 'Note that after prefix command, PATH, FILE_PATH, FOLDER_PATH must be kept between " ` "' },
+    { type: LineType.Output, value: 'Note that DATA must be kept between " `[(your data here)]` "' },
+    { type: LineType.Output, value: 'Example: cd `root/demo`' },
+    { type: LineType.Output, value: 'The correct direction :example "folder1/folder2" ' },
+    { type: LineType.Output, value: 'cd FOLDER_PATH: change current working directory/folder to the specified FOLDER' },
+    { type: LineType.Output, value: 'cr [-p] PATH [DATA]: create a new file (if DATA is specified, otherwise create a new folder) at the specified PATH' },
+    { type: LineType.Output, value: 'ls [FOLDER_PATH]: list out all items directly under a folder' },
+    { type: LineType.Output, value: 'find NAME [FOLDER_PATH]  search all files/folders whose name contains the substring NAME. If the optional param FOLDER_PATH is specified, find in the folder at FOLDER_PATH. ' },
+    { type: LineType.Output, value: 'up PATH NAME [DATA] update the file/folder at PATH to have new NAME and, optionally, new DATA' },
+    { type: LineType.Output, value: 'mv PATH FOLDER_PATH move a file/folder at PATH into the destination FOLDER_PATH' },
+    { type: LineType.Output, value: 'rm PATH [PATH2 PATH3...]: remove files/folders at the specified PATH(s)' },
+
+  ];
+
+
+
 const CommandPromt = () => {
   const [currentPath, setCurrentPath] = useState('root');
-  const [terminalLine, setTerminalLine] = useState<LineData[]>([]);
+  const [terminalLine, setTerminalLine] = useState<LineData[]>(welcomeGuide);
 
   const handleInput = (inputString: string) => {
     let terminalInput = inputString.trim();
@@ -40,6 +66,11 @@ const CommandPromt = () => {
       return;
     }
 
+    if (terminalInput === 'help') {
+      setTerminalLine(help);
+      return;
+    }
+
     const input = {
       commandLine: terminalInput,
       path: currentPath.length > 0 ? currentPath : 'root',
@@ -52,6 +83,9 @@ const CommandPromt = () => {
         creatFileOrFolder(input, terminalInput);
         break;
       case 'up':
+        updateFileOrFolder(input, terminalInput);
+        break;
+      case 'mv':
         updateFileOrFolder(input, terminalInput);
         break;
       case 'rm':
