@@ -1,7 +1,7 @@
 import axios from "axios";
 import { handleError, handleResponse } from "./response";
 
-const BASE_URL = ' https://be-file-management.herokuapp.com/api/v1/terminal';
+const BASE_URL = 'http://localhost:8080/api/v1/terminal';
 
 export const getData = (query: any) => {
     return axios.get(BASE_URL, {
