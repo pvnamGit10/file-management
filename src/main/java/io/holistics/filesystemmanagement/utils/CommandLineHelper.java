@@ -17,14 +17,24 @@ public class CommandLineHelper {
         return prefix;
     }
 
+    public String[] separateString(String commandLine) {
+        String standardizeCommand = standardizeString(commandLine);
+        String[] separated = standardizeCommand.split(" `");
+        for (int i = 0; i<separated.length ; i++){
+            String newString = separated[i].replace("`","");
+            separated[i] = newString;
+        }
+        return separated;
+    }
+
     public String getDataOfFile(String commandLine) {
         String standardizeCommand = standardizeString(commandLine);
-        if (!standardizeCommand.contains("`")) {
+        if (!standardizeCommand.contains("[")) {
             return "";
         }
         try {
             String data = standardizeCommand.substring(
-                    standardizeCommand.indexOf("`") + 1, standardizeCommand.lastIndexOf("`")
+                    standardizeCommand.indexOf("[") + 1, standardizeCommand.lastIndexOf("]")
             );
             return data;
         } catch (Exception e) {
@@ -33,16 +43,16 @@ public class CommandLineHelper {
     }
 
     public String getFileOrFolderPath(String commandLine) {
-        String standardizeCommand = standardizeString(commandLine);
+        String[] command = separateString(commandLine);
         try {
             String data = "";
-            if (standardizeCommand.split(" ").length == 2) {
-                data = standardizeCommand.split(" ")[1];
+            if (command.length == 2) {
+                data = command[1];
             } else {
-                if (standardizeCommand.split(" ")[2].contains("`")) {
-                    data = standardizeCommand.split(" ")[1];
+                if (command[2].contains("[")) {
+                    data = command[1];
                 } else {
-                    data = standardizeCommand.split(" ")[2];
+                    data = command[2];
                 }
             }
             return data;
@@ -82,13 +92,12 @@ public class CommandLineHelper {
     }
 
     public boolean checkCommandLineContainsParentPath(String commandLine) {
-        String standardizeCommand = standardizeString(commandLine);
-        String[] splitCommand = standardizeCommand.split(" ");
-        return splitCommand.length >= 3 && !splitCommand[2].startsWith("`");
+        String[] splitCommand = separateString(commandLine);
+        return splitCommand.length >= 3 && !splitCommand[2].startsWith("[");
     }
 
     public String getParentPathForCreate(String commandLine) {
-        String standardizeCommand = standardizeString(commandLine);
-        return standardizeCommand.split(" ")[1];
+        String[] separatedCommand = separateString(commandLine);
+        return separatedCommand[1];
     }
 }

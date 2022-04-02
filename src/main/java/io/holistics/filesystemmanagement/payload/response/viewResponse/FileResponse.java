@@ -15,12 +15,13 @@ import java.time.LocalDateTime;
 public class FileResponse {
     private String fileName;
     private String filePath;
-    private String size = "0kb";
+    private String size = "0 bytes";
     private LocalDateTime createAt;
 
     public FileResponse(Files file) {
         this.createAt = file.getCreateAt();
         this.fileName = file.getFileName();
         this.filePath = file.getFilePath();
+        this.size = file.getSize()+" bytes";
     }
 }

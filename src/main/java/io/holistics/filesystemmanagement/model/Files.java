@@ -25,7 +25,8 @@ public class Files extends BaseModel {
 
     private String ownerEmail;
 
-    @Transient
+    private long size;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Folders folders;
 

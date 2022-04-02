@@ -21,8 +21,6 @@ public class CommandLineFacade {
         switch (prefix) {
             case "cat":
                 return commandLineService.displayFile(body);
-            case "mv":
-                return commandLineService.moveFileOrFolder(body);
             case "cd":
                 return commandLineService.changeDirect(body);
             case "find":
@@ -41,7 +39,15 @@ public class CommandLineFacade {
 
     @Transactional
     public DataResponse updateFileOrFolder(CommandLineRequest body) {
-        return commandLineService.updateFileOrFolder(body);
+        String prefix = commandLineHelper.getPrefixCommand(body.getCommandLine());
+        switch (prefix) {
+            case "up":
+                return commandLineService.updateFileOrFolder(body);
+            case "mv":
+                return commandLineService.moveFileOrFolder(body);
+            default:
+                throw new IllegalArgumentException("terminal incorrect");
+        }
     }
 
     @Transactional
